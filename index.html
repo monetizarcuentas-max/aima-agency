@@ -1,305 +1,285 @@
-import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
-import {
-  Zap,
-  BrainCircuit,
-  Megaphone,
-  Mic,
-  Instagram,
-  Settings,
-  ArrowRight,
-  Check,
-  Sparkles,
-  Target,
-  TrendingUp,
-  BarChart3,
-  Globe,
-  Box,
-  Lock,
-  Search,
-  MousePointer2
-} from 'lucide-react';
-import { animate, motion, AnimatePresence } from 'framer-motion';
-
-// --- UTILS ---
-const cn = (...classes) => classes.filter(Boolean).join(' ');
-
-// --- COMPONENTE: GLOWING EFFECT (REDISEÑADO PARA ESTABILIDAD) ---
-const GlowingEffect = memo(({ 
-  proximity = 120, 
-  borderWidth = 3 
-}) => {
-  const containerRef = useRef(null);
-  const [position, setPosition] = useState({ x: 0, y: 0, active: 0 });
-  const [angle, setAngle] = useState(0);
-
-  useEffect(() => {
-    const handlePointerMove = (e) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      const isActive =
-        e.clientX > rect.left - proximity &&
-        e.clientX < rect.right + proximity &&
-        e.clientY > rect.top - proximity &&
-        e.clientY < rect.bottom + proximity;
-
-      if (isActive) {
-        const newAngle = (180 * Math.atan2(e.clientY - centerY, e.clientX - centerX)) / Math.PI + 90;
-        setAngle(newAngle);
-      }
-      setPosition({ x: e.clientX, y: e.clientY, active: isActive ? 1 : 0 });
-    };
-
-    window.addEventListener("pointermove", handlePointerMove);
-    return () => window.removeEventListener("pointermove", handlePointerMove);
-  }, [proximity]);
-
-  return (
-    <div
-      ref={containerRef}
-      className="absolute inset-0 pointer-events-none rounded-[inherit]"
-      style={{ zIndex: 0 }}
-    >
-      <div 
-        className="absolute inset-0 rounded-[inherit] transition-opacity duration-500"
-        style={{ 
-          opacity: position.active,
-          padding: borderWidth,
-          background: `conic-gradient(from ${angle}deg, transparent 0deg, #6366f1 20deg, #a855f7 40deg, #ec4899 60deg, transparent 100deg)`,
-          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-          WebkitMaskComposite: 'destination-out',
-          maskComposite: 'exclude',
-        }}
-      />
-    </div>
-  );
-});
-
-// --- GRID ITEM COMPONENT ---
-const GridItem = ({ area, icon, title, description }) => {
-  return (
-    <li className={cn("min-h-[14rem] list-none relative", area)}>
-      <div className="relative h-full rounded-[1.5rem] bg-white overflow-hidden group border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-        <GlowingEffect />
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agencia IA - Meta Ads & Automatización Magnética</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Framer Motion & React (CDN) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,400;1,700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .bg-pattern { 
+            background-image: radial-gradient(#6366f1 0.5px, transparent 0.5px); 
+            background-size: 30px 30px; 
+            opacity: 0.15; 
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
         
-        <div className="relative z-10 flex h-full flex-col justify-between gap-6 p-6 transition-colors duration-500 bg-white/90 backdrop-blur-[1px]">
-          <div className="flex flex-1 flex-col justify-between gap-3">
-            <div className="w-fit rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-indigo-600 transition-transform duration-500 group-hover:scale-110 group-hover:bg-indigo-50">
-              {icon}
+        /* Estilos para el efecto de brillo magnético */
+        .glowing-container {
+            position: relative;
+            border-radius: 1.5rem;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+        .glow-border {
+            position: absolute;
+            inset: -2px;
+            border-radius: inherit;
+            padding: 2px;
+            background: conic-gradient(from var(--angle), transparent 70%, #6366f1 80%, #a855f7 90%, transparent 100%);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+        .glowing-container:hover .glow-border {
+            opacity: 1;
+        }
+        @property --angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+        @keyframes rotate-glow {
+            to { --angle: 360deg; }
+        }
+        .glowing-container:hover .glow-border {
+            animation: rotate-glow 3s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 selection:bg-indigo-100 scroll-smooth">
+
+    <!-- Navegación -->
+    <nav class="fixed top-0 w-full glass z-50 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-600 p-1.5 rounded-lg text-white">
+                    <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                </div>
+                <span class="font-bold text-xl tracking-tight text-slate-800 italic">Agencia IA</span>
             </div>
-            <div className="space-y-3">
-              <h3 className="text-xl font-bold tracking-tight md:text-2xl text-slate-900 italic">
-                {title}
-              </h3>
-              <p className="text-sm leading-relaxed md:text-base text-slate-500 italic">
-                {description}
-              </p>
+            <div class="hidden md:flex gap-8 text-sm font-semibold text-slate-600 uppercase tracking-wider">
+                <a href="#proceso" class="hover:text-indigo-600 transition-colors">Nuestro Método</a>
+                <a href="#soluciones" class="hover:text-indigo-600 transition-colors">IA & Ads</a>
+                <a href="#inversion" class="hover:text-indigo-600 transition-colors">Inversión</a>
             </div>
-          </div>
-        </div>
-      </div>
-    </li>
-  );
-};
-
-// --- MAIN APP ---
-export default function App() {
-  const [submitted, setSubmitted] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
-
-  return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans selection:bg-indigo-100 overflow-x-hidden">
-      
-      {/* Navegación */}
-      <nav className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-300 border-b",
-        scrolled ? "bg-white/80 backdrop-blur-md py-4 border-slate-200 shadow-sm" : "bg-transparent py-6 border-transparent"
-      )}>
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
-              <BrainCircuit className="w-6 h-6" />
-            </div>
-            <span className="font-bold text-xl tracking-tight text-slate-800 italic">Agencia IA</span>
-          </div>
-          <div className="hidden md:flex gap-8 text-sm font-semibold text-slate-600 uppercase tracking-wider">
-            <a href="#soluciones" className="hover:text-indigo-600 transition-colors">Soluciones</a>
-            <a href="#inversion" className="hover:text-indigo-600 transition-colors">Inversión</a>
-            <a href="#contacto" className="hover:text-indigo-600 transition-colors">Contacto</a>
-          </div>
-          <a href="#contacto" className="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all active:scale-95">
-            Agendar Auditoría
-          </a>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="pt-48 pb-32 px-6 relative overflow-hidden bg-white">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-6xl mx-auto text-center relative z-10"
-        >
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-8 border border-indigo-100">
-            <Sparkles className="w-4 h-4 animate-pulse" /> Tracción & Conversión Magnética
-          </div>
-          <h1 className="text-5xl md:text-8xl font-black text-slate-900 mb-8 leading-[1.05]">
-            Atraemos con <span className="text-indigo-600">Meta Ads</span>, <br />
-            cerramos con <span className="relative inline-block italic">IA.</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-500 mb-12 max-w-4xl mx-auto italic">
-            No pierdas más leads por falta de respuesta. Nuestro ecosistema combina la potencia de anuncios segmentados con un cerebro artificial que atiende 24/7.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <a href="#contacto" className="w-full sm:w-auto bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-indigo-700 shadow-2xl shadow-indigo-200 transition-all flex items-center justify-center gap-3 group">
-              Explorar el Potencial <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+            <a href="#contacto" class="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all active:scale-95 shadow-xl shadow-slate-200">
+                Agendar Auditoría
             </a>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Grid de Soluciones */}
-      <section id="soluciones" className="py-24 px-6 bg-[#fafafa]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 italic underline decoration-indigo-500 underline-offset-8">Tecnología de Conversión</h2>
-            <p className="text-slate-500 italic max-w-2xl mx-auto">Desplegamos una arquitectura de IA multimodal que entiende, escucha y vende por ti.</p>
-          </div>
-
-          <ul className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <GridItem
-              area="md:col-span-6 xl:col-span-4"
-              icon={<Megaphone className="h-7 w-7" />}
-              title="Meta Ads de Élite"
-              description="Gestionamos campañas quirúrgicas en FB/IG para atraer prospectos que realmente quieren comprar."
-            />
-            <GridItem
-              area="md:col-span-6 xl:col-span-4"
-              icon={<Mic className="h-7 w-7" />}
-              title="Escucha de Audios"
-              description="Tu Agente IA procesa notas de voz de WhatsApp, entendiendo cada detalle sin que tú tengas que oír nada."
-            />
-            <GridItem
-              area="md:col-span-12 xl:col-span-4"
-              icon={<BrainCircuit className="h-7 w-7" />}
-              title="Cerebro IA Multimodal"
-              description="No es un bot, es una inteligencia entrenada con tu ADN de negocio para responder con coherencia técnica 24/7."
-            />
-            <GridItem
-              area="md:col-span-6"
-              icon={<Instagram className="h-7 w-7" />}
-              title="Instagram Direct Pro"
-              description="Automatización total de DMs y respuestas a menciones para que cada interacción sea una oportunidad de venta."
-            />
-            <GridItem
-              area="md:col-span-6"
-              icon={<Settings className="h-7 w-7" />}
-              title="3er Escenario a Medida"
-              description="Conectamos tu CRM o Calendar tras una auditoría para que tu flujo de trabajo sea invisible y perfecto."
-            />
-          </ul>
         </div>
-      </section>
+    </nav>
 
-      {/* Inversión */}
-      <section id="inversion" className="py-24 px-6 bg-white">
-        <div className="max-w-5xl mx-auto bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col md:flex-row overflow-hidden text-white border border-slate-800">
-          <div className="flex-1 p-12">
-            <h2 className="text-3xl font-bold mb-6 italic underline decoration-indigo-400 underline-offset-8">Inversión Estratégica</h2>
-            <p className="text-slate-400 mb-8 italic">Una estructura sólida que elimina costos fijos y errores humanos.</p>
-            <ul className="space-y-4">
-              {[
-                "Setup inicial: WhatsApp e Instagram.",
-                "Entrenamiento de IA con el ADN de tu negocio.",
-                "Gestión Mensual: Campañas Meta Ads + Soporte IA."
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 p-4 bg-slate-800/50 rounded-2xl border border-slate-700">
-                  <Check className="text-indigo-400 w-5 h-5 flex-shrink-0" />
-                  <span className="text-sm font-bold italic">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="bg-indigo-600 p-12 text-center md:w-96 flex flex-col justify-center border-l border-indigo-500/50">
-            <div className="mb-10">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mb-2 italic">Arquitectura Inicial</p>
-              <div className="text-6xl font-black italic">$800<span className="text-sm opacity-60 ml-1 italic font-normal">usd</span></div>
+    <!-- Hero Section -->
+    <section class="pt-48 pb-24 px-6 relative overflow-hidden">
+        <div class="absolute inset-0 bg-pattern -z-10"></div>
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-8 border border-indigo-100">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> Tracción & Conversión Magnética
             </div>
-            <div className="pt-8 border-t border-indigo-500/30">
-              <div className="bg-indigo-700/50 py-1 px-3 rounded-lg mb-4 inline-block mx-auto">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] italic">Gestión + Soporte</p>
-              </div>
-              <div className="text-5xl font-black italic">$377<span className="text-sm opacity-60 ml-1 italic font-normal">/mes</span></div>
+            <h1 class="text-5xl md:text-8xl font-black text-slate-900 mb-8 leading-[1.05]">
+                Atraemos con <span class="text-indigo-600">Meta Ads</span>, <br>
+                cerramos con <span class="text-indigo-600 italic underline decoration-indigo-200 decoration-8 underline-offset-4">IA.</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-600 mb-12 max-w-4xl mx-auto leading-relaxed italic">
+                Un sistema diseñado para profesionales: captamos prospectos en <strong>Facebook e Instagram</strong> y los atendemos mediante un <strong>Cerebro Digital</strong> experto.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <a href="#contacto" class="w-full sm:w-auto bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-indigo-700 shadow-2xl shadow-indigo-200 transition-all flex items-center justify-center gap-3 group">
+                    Ver el Sistema en Acción <i data-lucide="arrow-right" class="group-hover:translate-x-1 transition-transform"></i>
+                </a>
             </div>
-          </div>
         </div>
-      </section>
+    </section>
 
-      {/* Formulario de Contacto */}
-      <section id="contacto" className="py-24 bg-[#fafafa] px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4 italic">¿Hablamos de tus objetivos?</h2>
-          <p className="text-slate-500 mb-10 italic">Completa tus datos para agendar una auditoría sin cargo.</p>
-
-          <form onSubmit={handleSubmit} className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-200 text-left space-y-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
-              <Zap className="w-40 h-40 text-indigo-600" />
+    <!-- Soluciones con Efecto Magnético -->
+    <section id="soluciones" class="py-24 px-6 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4 italic underline decoration-indigo-500 underline-offset-8">Tecnología de Conversión</h2>
+                <p class="text-slate-500 italic max-w-2xl mx-auto text-balance">Desplegamos una arquitectura de IA multimodal que entiende, escucha y vende por ti las 24 horas.</p>
             </div>
-            {submitted ? (
-              <div className="text-center py-10">
-                <Zap className="w-16 h-16 text-indigo-600 mx-auto mb-4 animate-pulse" />
-                <h3 className="text-2xl font-bold italic">¡Solicitud Enviada!</h3>
-                <p className="text-slate-600 mt-2 italic">Un Agente IA analizará tu solicitud y te contactará en breve.</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase text-slate-400 ml-1 italic tracking-widest">Nombre Responsable</label>
-                  <input type="text" className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all" placeholder="Tu nombre" required />
+
+            <!-- Grid de Tarjetas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Tarjeta 1 -->
+                <div class="glowing-container group">
+                    <div class="glow-border"></div>
+                    <div class="relative bg-white p-8 rounded-[1.5rem] border border-slate-100 shadow-sm h-full transition-all group-hover:bg-slate-50/50">
+                        <div class="bg-indigo-600/10 text-indigo-600 p-3 rounded-xl w-fit mb-6 transition-transform group-hover:scale-110">
+                            <i data-lucide="megaphone" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 italic text-slate-900">Meta Ads Pro</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed italic">Gestionamos campañas quirúrgicas para atraer prospectos que realmente quieren comprar.</p>
+                    </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase text-slate-400 ml-1 italic tracking-widest">País</label>
-                    <input type="text" className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none" placeholder="Argentina, Chile..." required />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase text-slate-400 ml-1 italic tracking-widest">WhatsApp</label>
-                    <input type="text" className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none" placeholder="+54..." required />
-                  </div>
+                <!-- Tarjeta 2 -->
+                <div class="glowing-container group">
+                    <div class="glow-border"></div>
+                    <div class="relative bg-white p-8 rounded-[1.5rem] border border-slate-100 shadow-sm h-full transition-all group-hover:bg-slate-50/50">
+                        <div class="bg-indigo-600/10 text-indigo-600 p-3 rounded-xl w-fit mb-6 transition-transform group-hover:scale-110">
+                            <i data-lucide="mic" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 italic text-slate-900">Escucha de Audios</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed italic">Tu Agente IA procesa notas de voz de WhatsApp, entendiendo cada detalle sin que tú tengas que oír nada.</p>
+                    </div>
                 </div>
 
-                <button type="submit" className="w-full bg-slate-900 text-white py-5 rounded-xl font-bold text-lg hover:bg-indigo-600 transition-all flex items-center justify-center gap-2 group active:scale-95 shadow-xl shadow-slate-200">
-                  Solicitar Auditoría de Ventas <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <!-- Tarjeta 3 -->
+                <div class="glowing-container group">
+                    <div class="glow-border"></div>
+                    <div class="relative bg-white p-8 rounded-[1.5rem] border border-slate-100 shadow-sm h-full transition-all group-hover:bg-slate-50/50">
+                        <div class="bg-indigo-600/10 text-indigo-600 p-3 rounded-xl w-fit mb-6 transition-transform group-hover:scale-110">
+                            <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 italic text-slate-900">Cerebro IA Gemini</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed italic">Una inteligencia entrenada con tu ADN de negocio para responder con coherencia técnica y comercial.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Inversión -->
+    <section id="inversion" class="py-24 px-6 bg-slate-50">
+        <div class="max-w-5xl mx-auto bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col md:flex-row overflow-hidden text-white border border-slate-800">
+            <div class="flex-1 p-12">
+                <h2 class="text-3xl font-bold mb-6 italic underline decoration-indigo-400 underline-offset-8">Inversión Estratégica</h2>
+                <ul class="space-y-4">
+                    <li class="flex items-center gap-3 p-4 bg-slate-800/50 rounded-2xl border border-slate-700">
+                        <i data-lucide="check" class="text-indigo-400 w-5 h-5"></i>
+                        <span class="text-sm font-bold italic">Setup inicial: WhatsApp, Instagram y 3er Escenario.</span>
+                    </li>
+                    <li class="flex items-center gap-3 p-4 bg-indigo-900/40 rounded-2xl border border-indigo-500/30">
+                        <i data-lucide="sparkles" class="text-indigo-400 w-5 h-5"></i>
+                        <span class="text-sm font-bold text-indigo-100 italic underline decoration-indigo-400">Gestión Mensual: Ads + Soporte IA.</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="bg-indigo-600 p-12 text-center md:w-96 flex flex-col justify-center">
+                <div class="mb-10">
+                    <p class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2 italic">Setup Único</p>
+                    <div class="text-6xl font-black italic">$800<span class="text-sm opacity-60 ml-1 italic">usd</span></div>
+                </div>
+                <div class="pt-8 border-t border-indigo-500/50">
+                    <p class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2 italic">Mensual (Ads + IA)</p>
+                    <div class="text-5xl font-black italic">$377<span class="text-sm opacity-60 ml-1 italic">/mes</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario -->
+    <section id="contacto" class="py-24 bg-white px-6">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-4 italic">¿Hablamos de tus objetivos?</h2>
+            <form id="leadForm" class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-200 text-left space-y-6">
+                <div class="space-y-2">
+                    <label class="text-xs font-black uppercase text-slate-400 ml-1 italic tracking-widest">Nombre Responsable</label>
+                    <input type="text" name="nombre" class="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all" placeholder="Juan Pérez" required>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-xs font-black uppercase text-slate-400 ml-1 italic tracking-widest">País</label>
+                        <select name="pais" class="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none bg-white">
+                            <option>Argentina</option><option>Chile</option><option>Uruguay</option><option>México</option><option>España</option><option>Otro</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-black uppercase text-slate-400 ml-1 italic tracking-widest">WhatsApp Corporativo</label>
+                        <div class="flex gap-2">
+                            <input name="codigo_area" class="w-20 px-3 py-4 rounded-xl border border-slate-200 text-center font-bold" placeholder="Cód." required>
+                            <input name="telefono" class="flex-grow px-5 py-4 rounded-xl border border-slate-200" placeholder="Número" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-black uppercase text-slate-400 ml-1 italic tracking-widest text-indigo-600">El servicio que necesito es:</label>
+                    <select name="servicio" class="w-full px-5 py-4 rounded-xl border-2 border-indigo-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none bg-white font-medium">
+                        <option value="anuncios_agente">Anuncios para recibir mensajes que los responda un Agente</option>
+                        <option value="asistencia_whatsapp">Agente de asistencia al cliente por whatsapp</option>
+                        <option value="anuncio_meta">Anuncio con Meta Ads</option>
+                    </select>
+                </div>
+                <button type="submit" id="submitBtn" class="w-full bg-slate-900 text-white py-5 rounded-xl font-bold text-lg hover:bg-indigo-600 transition-all flex items-center justify-center gap-2 group active:scale-95 shadow-xl shadow-slate-200">
+                    <span id="btnText">Solicitar Auditoría</span> <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                 </button>
-              </>
-            )}
-          </form>
+            </form>
+            <div id="successMsg" class="hidden mt-6 p-10 bg-white rounded-[2.5rem] border border-green-100 text-center">
+                <i data-lucide="zap" class="w-16 h-16 text-indigo-600 mx-auto mb-4 animate-pulse"></i>
+                <h3 class="text-2xl font-bold italic">¡Solicitud Enviada!</h3>
+                <p class="text-slate-600 mt-2 italic text-balance">Un Agente IA analizará tu solicitud y te contactará en breve.</p>
+            </div>
         </div>
-      </section>
+    </section>
 
-      {/* Footer */}
-      <footer className="py-12 bg-white border-t border-slate-100 text-center">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-slate-400 text-sm italic font-medium">© 2024 Agencia MKT - Expertos en Meta Ads & Automatización IA.</p>
+    <!-- Footer -->
+    <footer class="py-12 bg-white border-t border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <i data-lucide="brain-circuit" class="text-indigo-600 w-6 h-6"></i>
+                <span class="font-bold text-xl tracking-tighter italic">Agencia IA</span>
+            </div>
+            <p class="text-slate-400 text-sm italic">© 2024 Agencia MKT - Expertos en Meta Ads & Automatización IA.</p>
         </div>
-      </footer>
-    </div>
-  );
-}
+    </footer>
+
+    <!-- Scripts de Interacción -->
+    <script>
+        lucide.createIcons();
+
+        // CONFIGURACIÓN DEL WEBHOOK
+        const webhookURL = "TU_URL_DE_WEBHOOK_AQUÍ";
+
+        document.getElementById('leadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            
+            submitBtn.disabled = true;
+            btnText.innerText = "Enviando...";
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch(webhookURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    this.classList.add('hidden');
+                    document.getElementById('successMsg').classList.remove('hidden');
+                } else {
+                    alert("Error al enviar. Intenta de nuevo.");
+                    submitBtn.disabled = false;
+                    btnText.innerText = "Solicitar Auditoría";
+                }
+            } catch (error) {
+                // Testing visual si no hay URL
+                this.classList.add('hidden');
+                document.getElementById('successMsg').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
